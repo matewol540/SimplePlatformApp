@@ -14,8 +14,8 @@ class GameLauncher(arcade.Window):
         self.coinList = None
         self.wallList = None
         self.playerList = None
-        self.ladderList = None #To be added
-        
+        self.dangerList = None
+        self.myMap = None       
         self.view_bottom = 0
         self.view_left = 0
 
@@ -25,36 +25,32 @@ class GameLauncher(arcade.Window):
         self.collect_coin_sound = arcade.load_sound(":resources:sounds/coin1.wav")
         self.jump_sound = arcade.load_sound(":resources:sounds/jump1.wav")
 
+        self.coinsCollectedCounter = 0 
 
 #Custom methods
     #Setups for each object        
     def setupPlayer(self):
         self.playerList = arcade.SpriteList()
         self.playerSprite = CharacterClass()
-        self.playerSprite.center_x = 64
-        self.playerSprite.center_y = 128
+        self.playerSprite.center_x = 256
+        self.playerSprite.center_y = 320
         self.playerList.append(self.playerSprite)
     def setupMap(self):
-        for x in range(0, 1250, 64):
-            wall = arcade.Sprite(":resources:images/tiles/grassMid.png", Const.TILE_SCALE)
-            wall.center_x = x
-            wall.center_y = 32
-            self.wallList.append(wall)
+        self.wallList = arcade.tilemap.process_layer(map_object=self.myMap,layer_name="Platforms",scaling=Const.TILE_SCALE,use_spatial_hash=True)
+        if self.myMap.background_color:
+            arcade.set_background_color(self.myMap.background_color)
     def setupObjects(self):
         for coordinate in Const.coordinate_list:
             wall = arcade.Sprite(":resources:images/tiles/boxCrate_double.png", Const.TILE_SCALE)
             wall.position = coordinate
             self.wallList.append(wall)
+    def setupCoins(self):
+        self.coinList = arcade.tilemap.process_layer(map_object=self.myMap, layer_name="Coins",scaling=Const.COIN_SCALE,use_spatial_hash=True)
+    def setupDanger(self):
+        self.dangerList = arcade.tilemap.process_layer(map_object=self.myMap, layer_name="Lava",scaling=Const.TILE_SCALE,use_spatial_hash=True)
     def setupEngine(self):
         self.physics_engine = arcade.PhysicsEnginePlatformer(self.playerSprite,self.wallList,Const.GRAVITY) #Has to be last method  called of all setups
-    def setupCoins(self):
-        self.coinList = arcade.SpriteList(use_spatial_hash=True)
-        for coordinate in Const.coordinate_list:
-            coin = arcade.Sprite(":resources:images/items/coinGold.png", Const.COIN_SCALE)
-            coin.center_x = coordinate[0]
-            coin.center_y = 200
-            self.coinList.append(coin)
-
+    
     #Camera scroll
     def screenScroll(self):
         changed = False
@@ -101,23 +97,33 @@ class GameLauncher(arcade.Window):
         for coin in coin_hit_list:
             coin.remove_from_sprite_lists()
             arcade.play_sound(self.collect_coin_sound)
-
+            self.coinsCollectedCounter += 1
+    def checkForDangerCollision(self):
+        danger_hit_list = arcade.check_for_collision_with_list(self.playerSprite, self.dangerList)
+        if danger_hit_list.__len__() > 0: 
+            self.setup()
 #Arcade build-in methods
     def setup(self):
+        mapName ="maps/tilesMap1.tmx"
+        self.myMap = arcade.tilemap.read_tmx(mapName)
         self.wallList = arcade.SpriteList(use_spatial_hash=True)
         self.setupPlayer()
         self.setupMap()
         self.setupObjects()
         self.setupCoins()
-
+        self.setupDanger()
         self.setupEngine()
+        self.coinsCollectedCounter = 0
 
     def on_draw(self):
         arcade.start_render()
         self.wallList.draw()
         self.playerList.draw()
         self.coinList.draw()        
-
+        self.dangerList.draw()
+        score_text = f"Money: {self.coinsCollectedCounter}"
+        arcade.draw_text(score_text, 10 + self.view_left, 10 + self.view_bottom,
+                         arcade.csscolor.WHITE, 18)
     #Character movement
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP or key == arcade.key.W:
@@ -138,6 +144,7 @@ class GameLauncher(arcade.Window):
         self.physics_engine.update()
         self.screenScroll()
         self.checkForCoinCollision()
+        self.checkForDangerCollision()
         #To discuss self.checkForEnemyCollision()
 
 def main():
