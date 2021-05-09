@@ -18,7 +18,8 @@ class GameLauncher(arcade.Window):
         self.myMap = None       
         self.view_bottom = 0
         self.view_left = 0
-
+        self.BackgroundTiles = None
+        self.ForegroundTiles = None
         self.playerSprite = None
         self.physics_engine = None
 
@@ -33,21 +34,29 @@ class GameLauncher(arcade.Window):
         self.playerList = arcade.SpriteList()
         self.playerSprite = CharacterClass()
         self.playerSprite.center_x = 256
-        self.playerSprite.center_y = 320
+        self.playerSprite.center_y = 256
         self.playerList.append(self.playerSprite)
-    def setupMap(self):
-        self.wallList = arcade.tilemap.process_layer(map_object=self.myMap,layer_name="Platforms",scaling=Const.TILE_SCALE,use_spatial_hash=True)
+    def setupPlatformLayer(self):
+        self.wallList = arcade.tilemap.process_layer(map_object=self.myMap,layer_name="Platform",scaling=Const.TILE_SCALE,use_spatial_hash=True)
         if self.myMap.background_color:
             arcade.set_background_color(self.myMap.background_color)
     def setupObjects(self):
-        for coordinate in Const.coordinate_list:
-            wall = arcade.Sprite(":resources:images/tiles/boxCrate_double.png", Const.TILE_SCALE)
-            wall.position = coordinate
-            self.wallList.append(wall)
+        #for coordinate in Const.coordinate_list:
+            #wall = arcade.Sprite(":resources:images/tiles/boxCrate_double.png", Const.TILE_SCALE)
+            #wall.position = coordinate
+            #self.wallList.append(wall)
+            pass
     def setupCoins(self):
         self.coinList = arcade.tilemap.process_layer(map_object=self.myMap, layer_name="Coins",scaling=Const.COIN_SCALE,use_spatial_hash=True)
+    def setupKeys(self):
+        pass
     def setupDanger(self):
-        self.dangerList = arcade.tilemap.process_layer(map_object=self.myMap, layer_name="Lava",scaling=Const.TILE_SCALE,use_spatial_hash=True)
+        self.dangerList = arcade.tilemap.process_layer(map_object=self.myMap, layer_name="Danger",scaling=Const.TILE_SCALE,use_spatial_hash=True)
+    def setupDoorsLayer(self):
+        pass
+    def setupForegroundLayer(self):
+        self.ForegroundTiles = arcade.tilemap.process_layer(map_object=self.myMap, layer_name="Foreground",scaling=Const.TILE_SCALE,use_spatial_hash=True)
+        self.BackgroundTiles = arcade.tilemap.process_layer(map_object=self.myMap, layer_name="Background",scaling=Const.TILE_SCALE,use_spatial_hash=True)
     def setupEngine(self):
         self.physics_engine = arcade.PhysicsEnginePlatformer(self.playerSprite,self.wallList,Const.GRAVITY) #Has to be last method  called of all setups
     
@@ -104,14 +113,15 @@ class GameLauncher(arcade.Window):
             self.setup()
 #Arcade build-in methods
     def setup(self):
-        mapName ="maps/testMapTo.tmx"
+        mapName ="maps/Map1.tmx"
         self.myMap = arcade.tilemap.read_tmx(mapName)
         self.wallList = arcade.SpriteList(use_spatial_hash=True)
         self.setupPlayer()
-        self.setupMap()
+        self.setupPlatformLayer()
         self.setupObjects()
         self.setupCoins()
         self.setupDanger()
+        self.setupForegroundLayer()
         self.setupEngine()
         self.coinsCollectedCounter = 0
 
