@@ -14,7 +14,6 @@ class GameLauncher(arcade.Window):
         self.coinList = None
         self.keylist = None
         self.platformTilesList = None
-        self.playerList = None
         self.dangerList = None
         self.myMap = None       
         self.view_bottom = 0
@@ -23,7 +22,7 @@ class GameLauncher(arcade.Window):
         self.ForegroundTiles = None
         self.playerSprite = None
         self.physics_engine = None
-
+        self.waterList = None
         self.collect_coin_sound = arcade.load_sound(":resources:sounds/coin1.wav")
         self.jump_sound = arcade.load_sound(":resources:sounds/jump1.wav")
 
@@ -32,11 +31,7 @@ class GameLauncher(arcade.Window):
 #Custom methods
     #Setups for each object        
     def setupPlayer(self):
-        self.playerList = arcade.SpriteList()
-        self.playerSprite = CharacterClass()
-        self.playerSprite.center_x = 256
-        self.playerSprite.center_y = 256
-        self.playerList.append(self.playerSprite)
+        self.playerSprite = CharacterClass(256,256)
     def setupPlatformLayer(self):
         self.platformTilesList = arcade.tilemap.process_layer(map_object=self.myMap,layer_name="Platform",scaling=Const.TILE_SCALE,use_spatial_hash=True)
         if self.myMap.background_color:
@@ -57,12 +52,17 @@ class GameLauncher(arcade.Window):
         self.dangerList = arcade.tilemap.process_layer(map_object=self.myMap, layer_name="Danger",scaling=Const.TILE_SCALE,use_spatial_hash=True)
     def setupDoorsLayer(self):
         pass
+    def setupEnemiesLayer(self):
+        pass
     def setupForegroundLayer(self):
         self.ForegroundTiles = arcade.tilemap.process_layer(map_object=self.myMap, layer_name="Foreground",scaling=Const.TILE_SCALE,use_spatial_hash=True)
         self.BackgroundTiles = arcade.tilemap.process_layer(map_object=self.myMap, layer_name="Background",scaling=Const.TILE_SCALE,use_spatial_hash=True)
     def setupEngine(self):
         self.physics_engine = arcade.PhysicsEnginePlatformer(self.playerSprite,self.platformTilesList,Const.GRAVITY) #Has to be last method  called of all setups
-    
+    def setupWater(self):
+        self.waterList = arcade.tilemap.process_layer(map_object=self.myMap, layer_name="Water_Moving_Bgd",scaling=Const.TILE_SCALE,use_spatial_hash=True)
+        for tile in arcade.tilemap.process_layer(map_object=self.myMap, layer_name="Water_Moving_Fgd",scaling=Const.TILE_SCALE,use_spatial_hash=True):
+            self.waterList.append(tile)
     #Camera scroll
     def screenScroll(self):
         changed = False
@@ -103,7 +103,7 @@ class GameLauncher(arcade.Window):
     def LoadSave():
         pass
 
-    #Checking for collision   
+    #Checking for collision or moving objects  
     def checkForMovingPlatforms(self):
         for tile in self.platformTilesList:
             if tile.boundary_right and tile.right > tile.boundary_right and tile.change_x > 0:
@@ -114,7 +114,10 @@ class GameLauncher(arcade.Window):
                 tile.change_y *= -1
             if tile.boundary_bottom and tile.bottom < tile.boundary_bottom and tile.change_y < 0:
                 tile.change_y *= -1
-            
+    def checkForMovingWater(self):
+        if self.waterList[0].center_x < -96 or self.waterList[0].center_x > 128:
+            for tile in self.waterList:
+                tile.change_x *=-1
     def checkForCoinCollision(self):
         coin_hit_list = arcade.check_for_collision_with_list(self.playerSprite, self.coinList)
         for coin in coin_hit_list:
@@ -125,6 +128,16 @@ class GameLauncher(arcade.Window):
         danger_hit_list = arcade.check_for_collision_with_list(self.playerSprite, self.dangerList)
         if danger_hit_list.__len__() > 0: 
             self.setup("maps/Map1.tmx")
+    
+    #For moving water bidirectional
+    def drawWater(self,isBackorFore):
+        waterListLenght = len(self.waterList)
+        for i in range(int(waterListLenght/2)):
+            it =i
+            if (isBackorFore):
+                it += waterListLenght/2
+            self.waterList[int(it)].draw()
+
 #Arcade build-in methods
     def setup(self,mapName):
         mapName = mapName
@@ -135,6 +148,7 @@ class GameLauncher(arcade.Window):
         self.setupCoins()
         self.setupDanger()
         self.setupForegroundLayer()
+        self.setupWater()
         self.setupEngine()
         self.coinsCollectedCounter = 0
 
@@ -142,12 +156,14 @@ class GameLauncher(arcade.Window):
     def on_draw(self):
         arcade.start_render()
         self.BackgroundTiles.draw()
+        self.drawWater(False)
         self.dangerList.draw()
-        self.playerList.draw()
+        self.playerSprite.draw()
         self.platformTilesList.draw()
         self.coinList.draw()        
         #self.Dors
         #self.keylist().draw()
+        self.drawWater(True)
         self.ForegroundTiles.draw()
         score_text = f"Money: {self.coinsCollectedCounter}"
         arcade.draw_text(score_text, 10 + self.view_left, 10 + self.view_bottom,
@@ -162,7 +178,7 @@ class GameLauncher(arcade.Window):
         elif key == arcade.key.RIGHT or key == arcade.key.D:
             self.playerSprite.change_x = Const.MOVEMENT_SPEED
         elif key == arcade.key.R:
-            "maps/Map1.tmx"
+            self.setup("maps/Map1.tmx")
             
     def on_key_release(self, key, modifiers):
         if key == arcade.key.LEFT or key == arcade.key.A:
@@ -174,10 +190,13 @@ class GameLauncher(arcade.Window):
         self.physics_engine.update()
         self.playerSprite.update_animation()
         self.platformTilesList.update()
+        self.waterList.update()
         self.checkForMovingPlatforms()
         self.screenScroll()
         self.checkForCoinCollision()
         self.checkForDangerCollision()
+        self.checkForMovingWater()
+
         #To discuss self.checkForEnemyCollision()
 
 
