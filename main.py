@@ -12,7 +12,8 @@ class GameLauncher(arcade.Window):
         super().__init__(Const.SCREEN_WIDTH, Const.SCREEN_HEIGHT, Const.APP_TITLE)
         arcade.set_background_color(Const.BACKGROUND)
         self.coinList = None
-        self.wallList = None
+        self.keylist = None
+        self.platformTilesList = None
         self.playerList = None
         self.dangerList = None
         self.myMap = None       
@@ -37,19 +38,21 @@ class GameLauncher(arcade.Window):
         self.playerSprite.center_y = 256
         self.playerList.append(self.playerSprite)
     def setupPlatformLayer(self):
-        self.wallList = arcade.tilemap.process_layer(map_object=self.myMap,layer_name="Platform",scaling=Const.TILE_SCALE,use_spatial_hash=True)
+        self.platformTilesList = arcade.tilemap.process_layer(map_object=self.myMap,layer_name="Platform",scaling=Const.TILE_SCALE,use_spatial_hash=True)
         if self.myMap.background_color:
             arcade.set_background_color(self.myMap.background_color)
+        for tile in arcade.tilemap.process_layer(map_object=self.myMap,layer_name="Platform_Moving",scaling=Const.TILE_SCALE,use_spatial_hash=True):
+            self.platformTilesList.append(tile)
     def setupObjects(self):
         #for coordinate in Const.coordinate_list:
             #wall = arcade.Sprite(":resources:images/tiles/boxCrate_double.png", Const.TILE_SCALE)
             #wall.position = coordinate
-            #self.wallList.append(wall)
+            #self.platformTilesList.append(wall)
             pass
     def setupCoins(self):
         self.coinList = arcade.tilemap.process_layer(map_object=self.myMap, layer_name="Coins",scaling=Const.COIN_SCALE,use_spatial_hash=True)
     def setupKeys(self):
-        pass
+        self.keylist = arcade.tilemap._process_tile_layer(map_object=self.myMap, layer="Keys",scaling=Const.COIN_SCALE,use_spatial_hash=True)
     def setupDanger(self):
         self.dangerList = arcade.tilemap.process_layer(map_object=self.myMap, layer_name="Danger",scaling=Const.TILE_SCALE,use_spatial_hash=True)
     def setupDoorsLayer(self):
@@ -58,7 +61,7 @@ class GameLauncher(arcade.Window):
         self.ForegroundTiles = arcade.tilemap.process_layer(map_object=self.myMap, layer_name="Foreground",scaling=Const.TILE_SCALE,use_spatial_hash=True)
         self.BackgroundTiles = arcade.tilemap.process_layer(map_object=self.myMap, layer_name="Background",scaling=Const.TILE_SCALE,use_spatial_hash=True)
     def setupEngine(self):
-        self.physics_engine = arcade.PhysicsEnginePlatformer(self.playerSprite,self.wallList,Const.GRAVITY) #Has to be last method  called of all setups
+        self.physics_engine = arcade.PhysicsEnginePlatformer(self.playerSprite,self.platformTilesList,Const.GRAVITY) #Has to be last method  called of all setups
     
     #Camera scroll
     def screenScroll(self):
@@ -101,6 +104,17 @@ class GameLauncher(arcade.Window):
         pass
 
     #Checking for collision   
+    def checkForMovingPlatforms(self):
+        for tile in self.platformTilesList:
+            if tile.boundary_right and tile.right > tile.boundary_right and tile.change_x > 0:
+                tile.change_x *= -1
+            if tile.boundary_left and tile.left < tile.boundary_left and tile.change_x < 0:
+                tile.change_x *= -1
+            if tile.boundary_top and tile.top > tile.boundary_top and tile.change_y > 0:
+                tile.change_y *= -1
+            if tile.boundary_bottom and tile.bottom < tile.boundary_bottom and tile.change_y < 0:
+                tile.change_y *= -1
+            
     def checkForCoinCollision(self):
         coin_hit_list = arcade.check_for_collision_with_list(self.playerSprite, self.coinList)
         for coin in coin_hit_list:
@@ -110,12 +124,11 @@ class GameLauncher(arcade.Window):
     def checkForDangerCollision(self):
         danger_hit_list = arcade.check_for_collision_with_list(self.playerSprite, self.dangerList)
         if danger_hit_list.__len__() > 0: 
-            self.setup()
+            self.setup("maps/Map1.tmx")
 #Arcade build-in methods
-    def setup(self):
-        mapName ="maps/Map1.tmx"
+    def setup(self,mapName):
+        mapName = mapName
         self.myMap = arcade.tilemap.read_tmx(mapName)
-        self.wallList = arcade.SpriteList(use_spatial_hash=True)
         self.setupPlayer()
         self.setupPlatformLayer()
         self.setupObjects()
@@ -125,12 +138,17 @@ class GameLauncher(arcade.Window):
         self.setupEngine()
         self.coinsCollectedCounter = 0
 
+    #Order of drawing is important! - Note: best use as leayer in map project
     def on_draw(self):
         arcade.start_render()
-        self.wallList.draw()
-        self.playerList.draw()
-        self.coinList.draw()        
+        self.BackgroundTiles.draw()
         self.dangerList.draw()
+        self.playerList.draw()
+        self.platformTilesList.draw()
+        self.coinList.draw()        
+        #self.Dors
+        #self.keylist().draw()
+        self.ForegroundTiles.draw()
         score_text = f"Money: {self.coinsCollectedCounter}"
         arcade.draw_text(score_text, 10 + self.view_left, 10 + self.view_bottom,
                          arcade.csscolor.WHITE, 18)
@@ -143,7 +161,9 @@ class GameLauncher(arcade.Window):
             self.playerSprite.change_x = -Const.MOVEMENT_SPEED
         elif key == arcade.key.RIGHT or key == arcade.key.D:
             self.playerSprite.change_x = Const.MOVEMENT_SPEED
-
+        elif key == arcade.key.R:
+            "maps/Map1.tmx"
+            
     def on_key_release(self, key, modifiers):
         if key == arcade.key.LEFT or key == arcade.key.A:
             self.playerSprite.change_x = 0
@@ -152,16 +172,28 @@ class GameLauncher(arcade.Window):
 
     def on_update(self, delta_time):
         self.physics_engine.update()
+        self.playerSprite.update_animation()
+        self.platformTilesList.update()
+        self.checkForMovingPlatforms()
         self.screenScroll()
         self.checkForCoinCollision()
         self.checkForDangerCollision()
         #To discuss self.checkForEnemyCollision()
 
+
+
+
+
+
+
+
+
+
+
 def main():
     window = GameLauncher()
-    window.setup()
+    window.setup("maps/Map1.tmx")
     arcade.run()
-
 
 if __name__ == "__main__":
     main()
