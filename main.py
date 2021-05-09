@@ -104,7 +104,7 @@ class GameLauncher(arcade.Window):
             self.setup()
 #Arcade build-in methods
     def setup(self):
-        mapName ="maps/tilesMap1.tmx"
+        mapName ="maps/testMapTo.tmx"
         self.myMap = arcade.tilemap.read_tmx(mapName)
         self.wallList = arcade.SpriteList(use_spatial_hash=True)
         self.setupPlayer()
