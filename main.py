@@ -5,6 +5,7 @@ Platform game created by Mateusz Wolski & Dawid Krakowczyk
 import arcade
 import constants as Const
 import json
+import math
 from CharacterClass import CharacterClass
 from MapClass import MapClass
 
@@ -20,12 +21,15 @@ class GameLauncher(arcade.Window):
         self.death_sound = arcade.load_sound(":resources:sounds/gameover1.wav")
         self.main_theme = arcade.load_sound(':resources:music/funkyrobot.mp3')
         self.finish_sound = arcade.load_sound(':resources:sounds/upgrade5.wav')
+        self.kill_enemy_sound = arcade.load_sound(':resources:sounds/hit2.wav')
+        self.laser_sound = arcade.load_sound(':resources:sounds/laser1.wav')
         self.audio_player = None
         self.enemies_positions = []
+        self.bullet_list = None
 
     def setupEngine(self):
         self.physics_engine = arcade.PhysicsEnginePlatformer(self.myMap.playerSprite,self.myMap.platformTilesList,Const.GRAVITY) #Has to be last method  called of all setups
-        
+        self.bullet_list = arcade.SpriteList()
         if self.audio_player:
             arcade.stop_sound(self.audio_player)
         self.audio_player = arcade.play_sound(self.main_theme)
@@ -120,7 +124,6 @@ class GameLauncher(arcade.Window):
                 enemy.set_position(enemy.center_x + 2, enemy.center_y)
                 if enemy.center_x == starting_position + 100:
                     self.enemies_positions[enemyIndex] = [starting_position, True]
-            print(enemy.center_x)
             enemyIndex += 1
             
     def checkForExitCollision(self):
@@ -130,12 +133,35 @@ class GameLauncher(arcade.Window):
             arcade.play_sound(self.jump_sound)
             self.LoadMap("maps/Map2.tmx")
             #Iteracja z listy map z constants
-#Arcade build-in methods
+    
+    def bulletAnimation(self):
+        self.bullet_list.update()
+        for bullet in self.bullet_list:
+            hit_list = arcade.check_for_collision_with_list(bullet, self.myMap.enemyList)
+            box_hit_list = arcade.check_for_collision_with_list(bullet, self.myMap.boxList)
+            if len(hit_list) > 0:
+                bullet.remove_from_sprite_lists()
+            for enemy in hit_list:
+                enemy.remove_from_sprite_lists()
+                arcade.play_sound(self.kill_enemy_sound)
+            for box in box_hit_list:
+                box.remove_from_sprite_lists()
+                arcade.play_sound(self.kill_enemy_sound)
+
+    def checkForCollisionWithBoxes(self):
+        any_collisions = arcade.check_for_collision_with_list(self.playerSprite, self.myMap.boxList)
+        if len(any_collisions) > 0:
+            self.playerSprite.angle *= -1
+            self.playerSprite.change_x = -math.sin(math.radians(self.playerSprite.angle)) * 6
+            self.playerSprite.center_x += self.playerSprite.change_x
+            self.playerSprite.center_y += self.playerSprite.change_y
+     
         
     #Order of drawing is important! - Note: best use as leayer in map project
     def on_draw(self):
         arcade.start_render()
         self.myMap.drawMap()
+        self.bullet_list.draw()
         self.checkForExitCollision()
     #Character movement
     def on_key_press(self, key, modifiers):
@@ -155,6 +181,37 @@ class GameLauncher(arcade.Window):
             self.playerSprite.change_x = 0
         elif key == arcade.key.RIGHT or key == arcade.key.D:
             self.playerSprite.change_x = 0
+    
+    def on_mouse_release(self, x, y,button, modifiers):
+        print("released")
+            
+    def on_mouse_press(self, x, y, button, modifiers):
+        """ Called whenever the mouse button is clicked. """
+
+        bullet = arcade.Sprite(":resources:images/space_shooter/laserBlue01.png", 0.7)
+
+        start_x = self.playerSprite.center_x
+        start_y = self.playerSprite.center_y
+        bullet.center_x = start_x
+        bullet.center_y = start_y
+
+        dest_x = x + self.myMap.view_left
+        dest_y = y + self.myMap.view_bottom
+        
+        print(dest_x)
+        print(dest_y)
+
+        x_diff = dest_x - start_x
+        y_diff = dest_y - start_y
+        angle = math.atan2(y_diff, x_diff)
+
+        bullet.angle = math.degrees(angle)
+        print(f"Bullet angle: {bullet.angle:.2f}")
+
+        bullet.change_x = math.cos(angle) * 20
+        bullet.change_y = math.sin(angle) * 20
+        arcade.play_sound(self.laser_sound)
+        self.bullet_list.append(bullet)
 
     def on_update(self, delta_time):
         self.physics_engine.update()
@@ -166,6 +223,8 @@ class GameLauncher(arcade.Window):
         self.checkForEnemiesCollision()
         self.animateEnemies()
         self.checkForMovingWater()
+        self.bulletAnimation()
+        self.checkForCollisionWithBoxes()
         
 
 def main():
