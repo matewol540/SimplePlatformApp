@@ -9,7 +9,7 @@ class CharacterClass(arcade.Sprite):
             return o.__dict__  
         def __init__(self):
             self.VIEW_DISTANCE = 200
-            self.MOVEMENT_SPEED = 4
+            self.MOVEMENT_SPEED = 6
             self.JUMP_HEIGHT = 15
             self.ALL_COINS_COUNTER = 0
             print(self.LoadGameState()) #Zrobic zapis do pliku tego i odczyt 
@@ -22,7 +22,6 @@ class CharacterClass(arcade.Sprite):
         self.CharacterProperties = self.CharacterClassproperties()
         self.center_x = center_x
         self.center_y = center_y
-        
 
         self.character_face_direction = Const.RIGHT_FACING
         self.cur_texture = 0
@@ -32,11 +31,9 @@ class CharacterClass(arcade.Sprite):
         self.climbing = False
         self.is_on_ladder = False
 
-        
         self.idle_texture_pair = self.load_texture_pair(f"{main_path}_idle.png")
         self.jump_texture_pair = self.load_texture_pair(f"{main_path}_jump.png")
         self.fall_texture_pair = self.load_texture_pair(f"{main_path}_fall.png")
-
 
         self.walk_textures = []
         for i in range(8):

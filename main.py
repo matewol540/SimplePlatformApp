@@ -16,17 +16,27 @@ class GameLauncher(arcade.Window):
         self.physics_engine = None
         self.player = None
         self.collect_coin_sound = arcade.load_sound(":resources:sounds/coin1.wav")
-        self.jump_sound = arcade.load_sound(":resources:sounds/jump1.wav")
+        self.jump_sound = arcade.load_sound(":resources:sounds/jump2.wav")
+        self.death_sound = arcade.load_sound(":resources:sounds/gameover1.wav")
+        self.main_theme = arcade.load_sound(':resources:music/funkyrobot.mp3')
+        self.finish_sound = arcade.load_sound(':resources:sounds/upgrade5.wav')
+        self.audio_player = None
+        self.enemies_positions = []
 
     def setupEngine(self):
         self.physics_engine = arcade.PhysicsEnginePlatformer(self.myMap.playerSprite,self.myMap.platformTilesList,Const.GRAVITY) #Has to be last method  called of all setups
-
+        
+        if self.audio_player:
+            arcade.stop_sound(self.audio_player)
+        self.audio_player = arcade.play_sound(self.main_theme)
+        self.setupEnemies()
+        
     def LoadMap(self,mapName):
         self.myMap = MapClass(mapName)
         self.myMap.setup()
         self.playerSprite = self.myMap.playerSprite
         self.setupEngine()
-
+        
 
 #Do handlings for game events
     def screenScroll(self):
@@ -87,11 +97,38 @@ class GameLauncher(arcade.Window):
         danger_hit_list = arcade.check_for_collision_with_list(self.playerSprite, self.myMap.dangerList)
         if danger_hit_list.__len__() > 0: 
             self.LoadMap("maps/Map1.tmx")
+            arcade.play_sound(self.death_sound)
+    def checkForEnemiesCollision(self):
+        enemies_hit_list = arcade.check_for_collision_with_list(self.playerSprite, self.myMap.enemyList)
+        if enemies_hit_list.__len__() > 0: 
+            self.LoadMap("maps/Map1.tmx")
+            arcade.play_sound(self.death_sound)
+                    
+    def setupEnemies(self):
+        for enemy in self.myMap.enemyList:
+            self.enemies_positions.append([enemy.center_x, True])
+            
+    def animateEnemies(self):
+        enemyIndex = 0
+        for enemy in self.myMap.enemyList:
+            starting_position = self.enemies_positions[enemyIndex][0]
+            movingLeft = self.enemies_positions[enemyIndex][1]
+            if enemy.center_x >= starting_position - 100 and movingLeft:
+                enemy.set_position(enemy.center_x - 2, enemy.center_y)
+            else:
+                self.enemies_positions[enemyIndex] = [starting_position, False]
+                enemy.set_position(enemy.center_x + 2, enemy.center_y)
+                if enemy.center_x == starting_position + 100:
+                    self.enemies_positions[enemyIndex] = [starting_position, True]
+            print(enemy.center_x)
+            enemyIndex += 1
+            
     def checkForExitCollision(self):
         exit_Collision_List = arcade.check_for_collision_with_list(self.playerSprite, self.myMap.Exit)
         if (exit_Collision_List.__len__()> 0):
             self.myMap.DrawWinText()
-            #self.LoadMap("maps/Map2.tmx")
+            arcade.play_sound(self.jump_sound)
+            self.LoadMap("maps/Map2.tmx")
             #Iteracja z listy map z constants
 #Arcade build-in methods
         
@@ -105,6 +142,7 @@ class GameLauncher(arcade.Window):
         if key == arcade.key.UP or key == arcade.key.W:
             if self.physics_engine.can_jump():
                 self.playerSprite.change_y = self.playerSprite.CharacterProperties.JUMP_HEIGHT
+                arcade.play_sound(self.jump_sound)
         elif key == arcade.key.LEFT or key == arcade.key.A:
             self.playerSprite.change_x = -self.playerSprite.CharacterProperties.MOVEMENT_SPEED
         elif key == arcade.key.RIGHT or key == arcade.key.D:
@@ -125,6 +163,8 @@ class GameLauncher(arcade.Window):
         self.screenScroll()
         self.checkForCoinCollision()
         self.checkForDangerCollision()
+        self.checkForEnemiesCollision()
+        self.animateEnemies()
         self.checkForMovingWater()
         
 

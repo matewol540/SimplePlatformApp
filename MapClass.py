@@ -9,6 +9,7 @@ class MapClass():
         self.coinList = None
         self.platformTilesList = None
         self.dangerList = None
+        self.enemyList = None
         self.BackgroundTiles = None
         self.ForegroundTiles = None
         self.playerSprite = None
@@ -40,7 +41,9 @@ class MapClass():
             self.waterList.append(tile)
     def setupExit(self):
         self.Exit = arcade.tilemap.process_layer(map_object=self.baseMap, layer_name="EXIT",scaling=Const.TILE_SCALE,use_spatial_hash=True)
-
+    def setupEnemies(self):
+        self.enemyList = arcade.tilemap.process_layer(map_object=self.baseMap, layer_name="Enemies",scaling=Const.TILE_SCALE,use_spatial_hash=True)
+    
     def setup(self):
         self.setupPlayer()
         self.setupPlatformLayer()
@@ -49,6 +52,7 @@ class MapClass():
         self.setupForegroundLayer()
         self.setupWater()
         self.setupExit()
+        self.setupEnemies();
         self.coinsCollectedCounter = 0
     def drawWater(self,isBackorFore):
         waterListLenght = len(self.waterList)
@@ -60,10 +64,11 @@ class MapClass():
     def drawMap(self):
         self.BackgroundTiles.draw()
         self.drawWater(False)
+        self.enemyList.draw()   
         self.dangerList.draw()
         self.playerSprite.draw()
         self.platformTilesList.draw()
-        self.coinList.draw()        
+        self.coinList.draw()     
         self.Exit.draw()
         self.drawWater(True)
         self.ForegroundTiles.draw()
