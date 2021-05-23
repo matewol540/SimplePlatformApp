@@ -17,6 +17,7 @@ class MapClass():
         self.view_left = 0
         self.coinsCollectedCounter = 0 
         self.Exit = None
+        self.winText = None
     #Map setups for diffrent sprites
     def setupPlayer(self):
         self.playerSprite = CharacterClass(256,256)
@@ -47,6 +48,7 @@ class MapClass():
         self.setupDanger()
         self.setupForegroundLayer()
         self.setupWater()
+        self.setupExit()
         self.coinsCollectedCounter = 0
     def drawWater(self,isBackorFore):
         waterListLenght = len(self.waterList)
@@ -62,8 +64,12 @@ class MapClass():
         self.playerSprite.draw()
         self.platformTilesList.draw()
         self.coinList.draw()        
+        self.Exit.draw()
         self.drawWater(True)
         self.ForegroundTiles.draw()
+        self.DrawText()
+        
+    def DrawText(self):
         score_text = f"Money: {self.coinsCollectedCounter}"
         score_remain_text = f"Still to collect: {len(self.coinList)}"
         arcade.draw_text(score_text, 10 + self.view_left, 10 + self.view_bottom,
@@ -71,6 +77,11 @@ class MapClass():
         arcade.draw_text(score_remain_text, 10 + self.view_left, 28 + self.view_bottom,
                          arcade.csscolor.WHITE, 18)
         
+    def DrawWinText(self):
+        winnerText = f"Wygrales!"
+        self.winText =arcade.draw_text(winnerText, self.view_left + Const.SCREEN_WIDTH/2, self.view_bottom + Const.SCREEN_HEIGHT/2  ,arcade.csscolor.WHITE, 36)
+        print(winnerText)
+
     def update(self):
         self.playerSprite.update_animation()
         self.platformTilesList.update()

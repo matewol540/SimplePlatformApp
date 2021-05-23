@@ -90,8 +90,7 @@ class GameLauncher(arcade.Window):
     def checkForExitCollision(self):
         exit_Collision_List = arcade.check_for_collision_with_list(self.playerSprite, self.myMap.Exit)
         if (exit_Collision_List.__len__()> 0):
-            winnerText = f"Wygrales!"
-            arcade.render_text(winnerText, Const.SCREEN_WIDTH/2, Const.SCREEN_HEIGHT/2)
+            self.myMap.DrawWinText()
             #self.LoadMap("maps/Map2.tmx")
             #Iteracja z listy map z constants
 #Arcade build-in methods
@@ -100,7 +99,7 @@ class GameLauncher(arcade.Window):
     def on_draw(self):
         arcade.start_render()
         self.myMap.drawMap()
-
+        self.checkForExitCollision()
     #Character movement
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP or key == arcade.key.W:
@@ -111,7 +110,7 @@ class GameLauncher(arcade.Window):
         elif key == arcade.key.RIGHT or key == arcade.key.D:
             self.playerSprite.change_x = self.playerSprite.CharacterProperties.MOVEMENT_SPEED
         elif key == arcade.key.R:
-            self.setup("maps/Map1.tmx")
+            self.LoadMap("maps/Map1.tmx")
             
     def on_key_release(self, key, modifiers):
         if key == arcade.key.LEFT or key == arcade.key.A:
@@ -127,6 +126,7 @@ class GameLauncher(arcade.Window):
         self.checkForCoinCollision()
         self.checkForDangerCollision()
         self.checkForMovingWater()
+        
 
 def main():
     window = GameLauncher()
