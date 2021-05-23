@@ -9,8 +9,8 @@ class CharacterClass(arcade.Sprite):
             return o.__dict__  
         def __init__(self):
             self.VIEW_DISTANCE = 200
-            self.MOVEMENT_SPEED = 4
-            self.JUMP_HEIGHT = 15
+            self.MOVEMENT_SPEED = 15
+            self.JUMP_HEIGHT = 30
             self.ALL_COINS_COUNTER = 0
             print(self.LoadGameState()) #Zrobic zapis do pliku tego i odczyt 
 

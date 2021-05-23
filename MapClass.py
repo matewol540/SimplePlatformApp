@@ -3,9 +3,10 @@ import arcade
 import constants as Const
 from CharacterClass import CharacterClass
 class MapClass():
-    def __init__(self,mapName):
-        self.baseMap = arcade.tilemap.read_tmx(mapName)
+    def __init__(self,mapProps):
+        self.baseMap = arcade.tilemap.read_tmx(mapProps[0])
         arcade.set_background_color(Const.BACKGROUND)
+        self.mapProps = mapProps
         self.coinList = None
         self.platformTilesList = None
         self.dangerList = None
@@ -20,7 +21,7 @@ class MapClass():
         self.winText = None
     #Map setups for diffrent sprites
     def setupPlayer(self):
-        self.playerSprite = CharacterClass(256,256)
+        self.playerSprite = CharacterClass(self.mapProps[1],self.mapProps[2])
     def setupPlatformLayer(self):
         self.platformTilesList = arcade.tilemap.process_layer(map_object=self.baseMap,layer_name="Platform",scaling=Const.TILE_SCALE,use_spatial_hash=True)
         if self.baseMap.background_color:

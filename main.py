@@ -86,13 +86,16 @@ class GameLauncher(arcade.Window):
     def checkForDangerCollision(self):
         danger_hit_list = arcade.check_for_collision_with_list(self.playerSprite, self.myMap.dangerList)
         if danger_hit_list.__len__() > 0: 
-            self.LoadMap("maps/Map1.tmx")
+            self.LoadMap(self.myMap.mapProps)
     def checkForExitCollision(self):
         exit_Collision_List = arcade.check_for_collision_with_list(self.playerSprite, self.myMap.Exit)
         if (exit_Collision_List.__len__()> 0):
             self.myMap.DrawWinText()
-            #self.LoadMap("maps/Map2.tmx")
-            #Iteracja z listy map z constants
+            if (Const.MapList[0][0] == self.myMap.mapProps[0]):
+                self.LoadMap(Const.MapList[1])
+            else:
+                self.LoadMap(Const.MapList[2])
+            
 #Arcade build-in methods
         
     #Order of drawing is important! - Note: best use as leayer in map project
@@ -110,7 +113,7 @@ class GameLauncher(arcade.Window):
         elif key == arcade.key.RIGHT or key == arcade.key.D:
             self.playerSprite.change_x = self.playerSprite.CharacterProperties.MOVEMENT_SPEED
         elif key == arcade.key.R:
-            self.LoadMap("maps/Map1.tmx")
+            self.LoadMap(self.myMap.mapProps)
             
     def on_key_release(self, key, modifiers):
         if key == arcade.key.LEFT or key == arcade.key.A:
@@ -130,7 +133,7 @@ class GameLauncher(arcade.Window):
 
 def main():
     window = GameLauncher()
-    window.LoadMap("maps/Map1.tmx")
+    window.LoadMap(Const.MapList[0])
     arcade.run()
 
 if __name__ == "__main__":
