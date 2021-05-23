@@ -127,7 +127,7 @@ class GameLauncher(arcade.Window):
     def checkForDangerCollision(self):
         danger_hit_list = arcade.check_for_collision_with_list(self.playerSprite, self.dangerList)
         if danger_hit_list.__len__() > 0: 
-            self.setup("maps/Map1.tmx")
+            self.setup("maps/Map2.tmx")
     
     #For moving water bidirectional
     def drawWater(self,isBackorFore):
@@ -178,7 +178,7 @@ class GameLauncher(arcade.Window):
         elif key == arcade.key.RIGHT or key == arcade.key.D:
             self.playerSprite.change_x = Const.MOVEMENT_SPEED
         elif key == arcade.key.R:
-            self.setup("maps/Map1.tmx")
+            self.setup("maps/Map2.tmx")
             
     def on_key_release(self, key, modifiers):
         if key == arcade.key.LEFT or key == arcade.key.A:
@@ -211,7 +211,7 @@ class GameLauncher(arcade.Window):
 
 def main():
     window = GameLauncher()
-    window.setup("maps/Map1.tmx")
+    window.setup("maps/Map2.tmx")
     arcade.run()
 
 if __name__ == "__main__":
