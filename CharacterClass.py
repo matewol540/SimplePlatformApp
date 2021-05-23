@@ -1,16 +1,25 @@
 import arcade
+import json
 import constants as Const
 
 
 class CharacterClass(arcade.Sprite):
-    def load_texture_pair(self,filename):
-        return [
-            arcade.load_texture(filename),
-            arcade.load_texture(filename, flipped_horizontally=True)
-        ]
+    class CharacterClassproperties(json.JSONEncoder):
+        def default(self):
+            return o.__dict__  
+        def __init__(self):
+            self.VIEW_DISTANCE = 200
+            self.MOVEMENT_SPEED = 4
+            self.JUMP_HEIGHT = 15
+            self.ALL_COINS_COUNTER = 0
+            print(self.LoadGameState()) #Zrobic zapis do pliku tego i odczyt 
+
+        def LoadGameState(self):
+            return json.dumps(self,default=lambda o:o.__dict__,sort_keys=True,indent=4)
+
     def __init__(self,center_x,center_y):
         super().__init__()
-        
+        self.CharacterProperties = self.CharacterClassproperties()
         self.center_x = center_x
         self.center_y = center_y
         
@@ -40,7 +49,13 @@ class CharacterClass(arcade.Sprite):
         self.texture = self.idle_texture_pair[0]
 
         self.set_hit_box(self.texture.hit_box_points)
+    
 
+    def load_texture_pair(self,filename):
+        return [
+            arcade.load_texture(filename),
+            arcade.load_texture(filename, flipped_horizontally=True)
+        ]
     def update_animation(self, delta_time: float = 1/60):
 
      # Flipping face direction
