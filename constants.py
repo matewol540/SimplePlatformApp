@@ -1,3 +1,7 @@
+"""
+Platform game created by Mateusz Wolski & Dawid Krakowczyk
+"""
+
 import arcade
 
 #VIEW PROPS

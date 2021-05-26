@@ -1,4 +1,0 @@
-To be discussed how to store maps
-1. Store as params to generate random stages
-2. Store as constant params in json, each map will be described with proper json.
-3. Maps created via creator and put here
