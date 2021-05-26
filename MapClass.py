@@ -10,10 +10,12 @@ class MapClass():
         self.coinList = None
         self.platformTilesList = None
         self.dangerList = None
+        self.enemyList = None
         self.BackgroundTiles = None
         self.ForegroundTiles = None
         self.playerSprite = None
         self.waterList = None
+        self.boxList = None
         self.view_bottom = 0
         self.view_left = 0
         self.coinsCollectedCounter = 0 
@@ -41,7 +43,11 @@ class MapClass():
             self.waterList.append(tile)
     def setupExit(self):
         self.Exit = arcade.tilemap.process_layer(map_object=self.baseMap, layer_name="EXIT",scaling=Const.TILE_SCALE,use_spatial_hash=True)
-
+    def setupEnemies(self):
+        self.enemyList = arcade.tilemap.process_layer(map_object=self.baseMap, layer_name="Enemies",scaling=Const.TILE_SCALE,use_spatial_hash=True)
+    def setupBoxes(self):
+        self.boxList = arcade.tilemap.process_layer(map_object=self.baseMap, layer_name="Boxes",scaling=Const.TILE_SCALE,use_spatial_hash=True)
+    
     def setup(self):
         self.setupPlayer()
         self.setupPlatformLayer()
@@ -50,6 +56,8 @@ class MapClass():
         self.setupForegroundLayer()
         self.setupWater()
         self.setupExit()
+        self.setupEnemies();
+        self.setupBoxes();
         self.coinsCollectedCounter = 0
     def drawWater(self,isBackorFore):
         waterListLenght = len(self.waterList)
@@ -61,12 +69,14 @@ class MapClass():
     def drawMap(self):
         self.BackgroundTiles.draw()
         self.drawWater(False)
+        self.enemyList.draw()   
         self.dangerList.draw()
         self.playerSprite.draw()
         self.platformTilesList.draw()
-        self.coinList.draw()        
+        self.coinList.draw()     
         self.Exit.draw()
         self.drawWater(True)
+        self.boxList.draw()
         self.ForegroundTiles.draw()
         self.DrawText()
         
@@ -86,4 +96,5 @@ class MapClass():
     def update(self):
         self.playerSprite.update_animation()
         self.platformTilesList.update()
+        self.boxList.update()
         self.waterList.update()
