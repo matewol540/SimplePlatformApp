@@ -12,7 +12,6 @@ class CharacterClass(arcade.Sprite):
             self.MOVEMENT_SPEED = 8
             self.JUMP_HEIGHT = 20
             self.ALL_COINS_COUNTER = 0
-            print(self.LoadGameState()) #Zrobic zapis do pliku tego i odczyt 
 
         def LoadGameState(self):
             return json.dumps(self,default=lambda o:o.__dict__,sort_keys=True,indent=4)

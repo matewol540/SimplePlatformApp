@@ -5,7 +5,6 @@ from GameObjects.CharacterClass import CharacterClass
 
 class MapClass():
     def __init__(self,mapProps):
-        print(f"Loading map from file {mapProps[0]}")
         self.baseMap = arcade.tilemap.read_tmx(mapProps[0])
         arcade.set_background_color(Const.BACKGROUND)
         self.kill_enemy_sound = arcade.load_sound(':resources:sounds/hit2.wav') # Think to pass this value in better way
@@ -101,7 +100,6 @@ class MapClass():
     def DrawWinText(self):
         winnerText = f"Wygrales!"
         self.winText =arcade.draw_text(winnerText, self.view_left + Const.SCREEN_WIDTH/2, self.view_bottom + Const.SCREEN_HEIGHT/2  ,arcade.csscolor.WHITE, 36)
-        print(winnerText)
     
     def animateEnemies(self):
         enemyIndex = 0

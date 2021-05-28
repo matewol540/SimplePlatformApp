@@ -99,7 +99,6 @@ class GameView(arcade.View):
         
     def initMusic(self):
         if self.audio_player:
-            print(f"Stopping music")
             arcade.stop_sound(self.audio_player)
         self.audio_player = arcade.play_sound(self.window.main_theme)
     
@@ -147,15 +146,11 @@ class GameView(arcade.View):
         dest_x = x + self.myMap.view_left
         dest_y = y + self.myMap.view_bottom
         
-        print(dest_x)
-        print(dest_y)
-
         x_diff = dest_x - start_x
         y_diff = dest_y - start_y
         angle = math.atan2(y_diff, x_diff)
 
         bullet.angle = math.degrees(angle)
-        print(f"Bullet angle: {bullet.angle:.2f}")
 
         bullet.change_x = math.cos(angle) * 20
         bullet.change_y = math.sin(angle) * 20
