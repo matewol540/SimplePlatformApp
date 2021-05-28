@@ -4,10 +4,11 @@ import constants as Const
 from GameObjects.CharacterClass import CharacterClass
 
 class MapClass():
+    #Constructor of map class
     def __init__(self,mapProps):
         self.baseMap = arcade.tilemap.read_tmx(mapProps[0])
         arcade.set_background_color(Const.BACKGROUND)
-        self.kill_enemy_sound = arcade.load_sound(':resources:sounds/hit2.wav') # Think to pass this value in better way
+        self.kill_enemy_sound = arcade.load_sound(':resources:sounds/hit2.wav')
         self.mapProps = mapProps
         self.coinList = None
         self.platformTilesList = None
@@ -25,7 +26,8 @@ class MapClass():
         self.winText = None
         self.enemies_positions = []
         self.bullet_list = None
-    #Map setups for diffrent sprites
+    
+    #Map setups for diffrent sprites / Most of them is resolving tiles from predefined map basing on naming of layer and stores tiles in lists
     def setupPlayer(self):
         self.playerSprite = CharacterClass(self.mapProps[1],self.mapProps[2])
     def setupPlatformLayer(self):
@@ -55,7 +57,7 @@ class MapClass():
         self.boxList = arcade.tilemap.process_layer(map_object=self.baseMap, layer_name="Boxes",scaling=Const.TILE_SCALE,use_spatial_hash=True)
     def setupBullets(self):
         self.bullet_list = arcade.SpriteList()
-    #Main setup method to run sub-setups
+    #Main setup method to run above sub-setups
     def setup(self):
         self.setupPlayer()
         self.setupPlatformLayer()
@@ -69,7 +71,7 @@ class MapClass():
         self.setupBullets()
         self.coinsCollectedCounter = 0
     
-    
+    #Drawing sub methods which are processing stored tiles and display them on screen / Method is called from GameView class
     def drawWater(self,isBackorFore):
         waterListLenght = len(self.waterList)
         for i in range(int(waterListLenght/2)):
@@ -119,14 +121,17 @@ class MapClass():
         for bullet in self.bullet_list:
             hit_list = arcade.check_for_collision_with_list(bullet, self.enemyList)
             box_hit_list = arcade.check_for_collision_with_list(bullet, self.boxList)
-            if len(hit_list) > 0:
+            if len(hit_list) > 0 or len(box_hit_list) > 0:
                 bullet.remove_from_sprite_lists()
             for enemy in hit_list:
                 enemy.remove_from_sprite_lists()
                 arcade.play_sound(self.kill_enemy_sound)
             for box in box_hit_list:
                 box.remove_from_sprite_lists()
+            if arcade.get_distance(self.playerSprite.center_x,self.playerSprite.center_y,bullet.center_x,bullet.center_y) > self.playerSprite.CharacterProperties.BULLET_RANGE:
+                bullet.remove_from_sprite_lists()
     
+    #Main update method of map class called from GameView to update state of sprites
     def update(self):
         self.playerSprite.update_animation()
         self.platformTilesList.update()
