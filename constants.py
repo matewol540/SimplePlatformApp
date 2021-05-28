@@ -1,3 +1,7 @@
+"""
+Platform game created by Mateusz Wolski & Dawid Krakowczyk
+"""
+
 import arcade
 
 #VIEW PROPS
@@ -21,6 +25,7 @@ BACKGROUND = arcade.csscolor.CORNFLOWER_BLUE
 TILE_SCALE = 1  
 COIN_SCALE = 1
 
+MapList = [["maps/Map1.tmx",256,256],["maps/Map2.tmx",256,256],["maps/Map3.tmx",256,256]]
 
 #Test objects
 coordinate_list = [[512, 96],[256, 96],[768, 96]]
