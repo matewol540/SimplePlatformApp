@@ -2,17 +2,18 @@ import arcade
 import math
 import constants as Const
 from GameObjects.MapClass import MapClass
+from Views.PauseView import PauseView
 
 
 class GameView(arcade.View):
+    #Constructor of GameView class
     def __init__(self): 
         super().__init__()
         self.myMap = None   
         self.physics_engine = None
-        self.player = None
         self.audio_player = None
 
-    #Do handlings for game events
+    #Do handlings for game events, checking for collision with objects for playable character
     def screenScroll(self):
         changed = False
 
@@ -80,7 +81,6 @@ class GameView(arcade.View):
     def checkForExitCollision(self):
         exit_Collision_List = arcade.check_for_collision_with_list(self.playerSprite, self.myMap.Exit)
         if (exit_Collision_List.__len__()> 0):
-            self.myMap.DrawWinText()
             arcade.play_sound(self.window.jump_sound)
             if (Const.MapList[0][0] == self.myMap.mapProps[0]):
                 self.LoadMap(Const.MapList[1])
@@ -94,14 +94,17 @@ class GameView(arcade.View):
             self.playerSprite.center_x += self.playerSprite.change_x
             self.playerSprite.center_y += self.playerSprite.change_y
     
+    #Create engine for game which is handling interaction of player sprite with map tiles
     def setupEngine(self):
         self.physics_engine = arcade.PhysicsEnginePlatformer(self.myMap.playerSprite,self.myMap.platformTilesList,Const.GRAVITY) #Has to be last method  called of all setups
         
+    #Background music initiallizer
     def initMusic(self):
         if self.audio_player:
             arcade.stop_sound(self.audio_player)
         self.audio_player = arcade.play_sound(self.window.main_theme)
     
+    #Method called to parse tmx file into tiles object
     def LoadMap(self,mapName):
         self.myMap = MapClass(mapName)
         self.myMap.setup()
@@ -110,7 +113,7 @@ class GameView(arcade.View):
         self.setupEngine()     
 
     #Arcade build-in methods
-    #Order of drawing is important! - Note: best use as leayer in map project
+    #Order of drawing is important! - Note: best use as layer in map project to keep visual content in order
     def on_draw(self):
         arcade.start_render()
         self.myMap.drawMap()
@@ -124,8 +127,9 @@ class GameView(arcade.View):
             self.playerSprite.change_x = -self.playerSprite.CharacterProperties.MOVEMENT_SPEED
         elif key == arcade.key.RIGHT or key == arcade.key.D:
             self.playerSprite.change_x = self.playerSprite.CharacterProperties.MOVEMENT_SPEED
-        elif key == arcade.key.R:
-            self.LoadMap(self.myMap.mapProps)
+        elif key == arcade.key.ESCAPE:
+            _pauseView = PauseView(self)
+            self.window.show_view(_pauseView)
     def on_key_release(self, key, modifiers):
         if key == arcade.key.LEFT or key == arcade.key.A:
             self.playerSprite.change_x = 0
@@ -157,6 +161,7 @@ class GameView(arcade.View):
         arcade.play_sound(self.window.laser_sound)
         self.myMap.bullet_list.append(bullet)
 
+    #Method called delta_time in 1 sec which fires all other sub updates
     def on_update(self, delta_time):
         self.physics_engine.update()
         self.myMap.update()

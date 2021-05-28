@@ -4,14 +4,14 @@ import constants as Const
 
 
 class CharacterClass(arcade.Sprite):
+    #Base class containing variables used to describe character properties
     class CharacterClassproperties(json.JSONEncoder):
-        def default(self):
-            return o.__dict__  
         def __init__(self):
             self.VIEW_DISTANCE = 200
             self.MOVEMENT_SPEED = 8
             self.JUMP_HEIGHT = 20
             self.ALL_COINS_COUNTER = 0
+            self.BULLET_RANGE = 550
 
         def LoadGameState(self):
             return json.dumps(self,default=lambda o:o.__dict__,sort_keys=True,indent=4)
@@ -22,39 +22,38 @@ class CharacterClass(arcade.Sprite):
         self.center_x = center_x
         self.center_y = center_y
         
-
+        # Loading textures for playable character
         self.character_face_direction = Const.RIGHT_FACING
         self.cur_texture = 0
         main_path = ":resources:images/animated_characters/male_person/malePerson"
 
+        # Variables describing current state to block actions
         self.jumping = False
         self.climbing = False
         self.is_on_ladder = False
 
-        
+        # Additional textures to load proper animations
         self.idle_texture_pair = self.load_texture_pair(f"{main_path}_idle.png")
         self.jump_texture_pair = self.load_texture_pair(f"{main_path}_jump.png")
         self.fall_texture_pair = self.load_texture_pair(f"{main_path}_fall.png")
-
-
         self.walk_textures = []
         for i in range(8):
             self.walk_textures.append(self.load_texture_pair(f"{main_path}_walk{i}.png"))
-
         self.climbing_textures = []
         for i in range(2):
             self.climbing_textures.append(arcade.load_texture(f"{main_path}_climb{i}.png"))
-
         self.texture = self.idle_texture_pair[0]
 
+        #Set hitbox for player 
         self.set_hit_box(self.texture.hit_box_points)
     
-
+    #Method used to load pair textures
     def load_texture_pair(self,filename):
         return [
             arcade.load_texture(filename),
             arcade.load_texture(filename, flipped_horizontally=True)
         ]
+    #Method used to update animation of character/ called from Map class which contains object of this class
     def update_animation(self, delta_time: float = 1/60):
 
      # Flipping face direction
