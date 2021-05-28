@@ -96,15 +96,18 @@ class GameView(arcade.View):
     
     def setupEngine(self):
         self.physics_engine = arcade.PhysicsEnginePlatformer(self.myMap.playerSprite,self.myMap.platformTilesList,Const.GRAVITY) #Has to be last method  called of all setups
+        
+    def initMusic(self):
         if self.audio_player:
+            print(f"Stopping music")
             arcade.stop_sound(self.audio_player)
         self.audio_player = arcade.play_sound(self.window.main_theme)
-
     
     def LoadMap(self,mapName):
         self.myMap = MapClass(mapName)
         self.myMap.setup()
         self.playerSprite = self.myMap.playerSprite
+        self.initMusic()
         self.setupEngine()     
 
     #Arcade build-in methods
